@@ -32,21 +32,27 @@ const budgetOptions = [
   { value: "応相談", label: "応相談" },
 ];
 
-export default function ProposalForm() {
+interface ProposalFormProps {
+  defaults?: Partial<ProposalInput>
+}
+
+export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<ProposalInput>({
     projectTitle: "",
     clientName: "",
     projectDescription: "",
-    techStack: [],
-    duration: "",
-    budget: "",
+    techStack: defaults.techStack ?? [],
+    duration: defaults.duration ?? "",
+    budget: defaults.budget ?? "",
     yourName: "",
-    yourRole: "",
+    yourRole: defaults.yourRole ?? "",
     hourlyRate: 0,
   });
-  const [techStackInput, setTechStackInput] = useState("");
+  const [techStackInput, setTechStackInput] = useState(
+    defaults.techStack?.join(", ") ?? ""
+  );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
