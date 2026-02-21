@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import ProposalForm from "@/components/proposal/ProposalForm"
 import { templates } from "@/lib/templates"
 import type { Template } from "@/lib/templates"
+import type { ProposalInput } from "@/lib/types"
 
 const colorMap: Record<string, { card: string; badge: string; icon: string }> = {
   indigo: {
@@ -31,6 +32,22 @@ const colorMap: Record<string, { card: string; badge: string; icon: string }> = 
 
 export default function GeneratePage() {
   const [selected, setSelected] = useState<Template | null>(null)
+  const [fromEdit, setFromEdit] = useState(false)
+
+  useEffect(() => {
+    const editMode = sessionStorage.getItem('editMode')
+    if (editMode === 'true') {
+      sessionStorage.removeItem('editMode')
+      const saved = sessionStorage.getItem('proposalEditInput')
+      if (saved) {
+        try {
+          const input = JSON.parse(saved) as ProposalInput
+          setFromEdit(true)
+          setSelected({ id: 'edit', name: '再編集', description: '', icon: '✏️', color: 'indigo', defaults: input })
+        } catch {}
+      }
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 px-4 py-12">
@@ -38,12 +55,18 @@ export default function GeneratePage() {
         {/* 戻るリンク */}
         <div className="mb-8">
           {selected ? (
-            <button
-              onClick={() => setSelected(null)}
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-            >
-              ← テンプレート選択に戻る
-            </button>
+            fromEdit ? (
+              <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+                ← ダッシュボードに戻る
+              </Link>
+            ) : (
+              <button
+                onClick={() => setSelected(null)}
+                className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                ← テンプレート選択に戻る
+              </button>
+            )
           ) : (
             <Link href="/" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
               ← トップに戻る
@@ -108,7 +131,7 @@ export default function GeneratePage() {
         ) : (
           /* フォーム */
           <div>
-            {selected.id !== "blank" && (
+            {selected.id !== "blank" && selected.id !== "edit" && (
               <div className="mb-6 flex items-center gap-3 rounded-xl bg-white border border-gray-200 px-4 py-3 shadow-sm">
                 <span className="text-xl">{selected.icon}</span>
                 <div>

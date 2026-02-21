@@ -40,15 +40,15 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<ProposalInput>({
-    projectTitle: "",
-    clientName: "",
-    projectDescription: "",
+    projectTitle: defaults.projectTitle ?? "",
+    clientName: defaults.clientName ?? "",
+    projectDescription: defaults.projectDescription ?? "",
     techStack: defaults.techStack ?? [],
     duration: defaults.duration ?? "",
     budget: defaults.budget ?? "",
-    yourName: "",
+    yourName: defaults.yourName ?? "",
     yourRole: defaults.yourRole ?? "",
-    hourlyRate: 0,
+    hourlyRate: defaults.hourlyRate ?? 0,
   });
   const [techStackInput, setTechStackInput] = useState(
     defaults.techStack?.join(", ") ?? ""

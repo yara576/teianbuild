@@ -46,12 +46,24 @@ export default function PreviewPage() {
     <div className="min-h-screen bg-gray-100 py-8 print:bg-white print:py-0">
       {/* Action bar - hidden when printing */}
       <div className="max-w-[210mm] mx-auto mb-4 flex justify-between print:hidden px-4">
-        <Button variant="outline" onClick={() => router.push('/generate')}>
-          ← 編集に戻る
+        <Button
+          variant="outline"
+          onClick={() => {
+            sessionStorage.setItem('proposalEditInput', JSON.stringify(input))
+            sessionStorage.setItem('editMode', 'true')
+            router.push('/generate')
+          }}
+        >
+          ← 再編集する
         </Button>
-        <Button onClick={handleDownloadPDF}>
-          PDFダウンロード
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => router.push('/dashboard')}>
+            ダッシュボードへ
+          </Button>
+          <Button onClick={handleDownloadPDF}>
+            PDFダウンロード
+          </Button>
+        </div>
       </div>
 
       <ProposalPreview input={input} output={output} />
