@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* ナビゲーション */}
@@ -12,12 +16,29 @@ export default function Home() {
             teian<span className="text-indigo-600">build</span>
           </span>
           <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-gray-500 sm:block">無料で3件まで使えます</span>
-            <Link href="/generate">
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
-                無料で試す
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="hidden text-sm text-gray-500 hover:text-gray-900 transition-colors sm:block">
+                  ダッシュボード
+                </Link>
+                <Link href="/generate">
+                  <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
+                    新規作成
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/login" className="hidden text-sm text-gray-500 hover:text-gray-900 transition-colors sm:block">
+                  ログイン
+                </Link>
+                <Link href="/generate">
+                  <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
+                    無料で試す
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
