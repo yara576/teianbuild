@@ -163,6 +163,11 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
         body: JSON.stringify(payload),
       });
 
+      if (res.status === 403) {
+        alert("無料プランの上限（3件）に達しました。\nダッシュボードから不要な提案書を削除すると新たに作成できます。");
+        return;
+      }
+
       if (!res.ok) throw new Error("API error");
 
       const data = await res.json();

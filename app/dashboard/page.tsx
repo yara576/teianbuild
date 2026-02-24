@@ -55,12 +55,25 @@ export default async function DashboardPage() {
       {/* メインコンテンツ */}
       <main className="mx-auto max-w-5xl px-6 py-10">
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">提案書一覧</h2>
-          <Link href="/generate">
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
-              + 新規作成
-            </Button>
-          </Link>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">提案書一覧</h2>
+            <p className="mt-1 text-sm text-gray-400">
+              無料プラン：{typedProposals.length} / 3 件使用
+            </p>
+          </div>
+          {typedProposals.length < 3 ? (
+            <Link href="/generate">
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
+                + 新規作成
+              </Button>
+            </Link>
+          ) : (
+            <div className="text-right">
+              <span className="inline-block rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-700">
+                上限（3件）に達しました
+              </span>
+            </div>
+          )}
         </div>
 
         {typedProposals.length === 0 ? (
