@@ -82,6 +82,7 @@ function LoginModal({ onClose, onLogin }: { onClose: () => void; onLogin: () => 
 export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [assistLoading, setAssistLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [restored, setRestored] = useState(false);
@@ -130,6 +131,37 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
       ...prev,
       [name]: name === "hourlyRate" ? Number(value) : value,
     }));
+  };
+
+  const handleAssistDescription = async () => {
+    setAssistLoading(true);
+    setForm((prev) => ({ ...prev, projectDescription: "" }));
+    try {
+      const res = await fetch("/api/assist/description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectTitle: form.projectTitle,
+          clientName: form.clientName,
+          techStack: techStackInput.split(",").map((s) => s.trim()).filter(Boolean),
+          currentDescription: form.projectDescription,
+        }),
+      });
+      if (!res.ok || !res.body) throw new Error();
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let text = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        text += decoder.decode(value, { stream: true });
+        setForm((prev) => ({ ...prev, projectDescription: text }));
+      }
+    } catch {
+      alert("AIによる補完に失敗しました。もう一度お試しください。");
+    } finally {
+      setAssistLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -252,16 +284,39 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
 
             {/* 案件概要 */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="projectDescription">案件概要</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="projectDescription">案件概要</Label>
+                <button
+                  type="button"
+                  onClick={handleAssistDescription}
+                  disabled={assistLoading || !form.projectTitle}
+                  className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                  {assistLoading ? (
+                    <>
+                      <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      生成中...
+                    </>
+                  ) : (
+                    <>✨ AIで補完</>
+                  )}
+                </button>
+              </div>
               <Textarea
                 id="projectDescription"
                 name="projectDescription"
                 value={form.projectDescription}
                 onChange={handleChange}
                 rows={4}
-                placeholder="案件の概要を入力してください"
+                placeholder="案件の概要を入力してください。プロジェクト名を入力後「✨ AIで補完」を押すと自動生成できます"
                 required
               />
+              {!form.projectTitle && (
+                <p className="text-xs text-gray-400">※ 案件タイトルを入力すると「AIで補完」が使えます</p>
+              )}
             </div>
 
             {/* 技術スタック */}
