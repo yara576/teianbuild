@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
 
   const handleOAuth = async (provider: "google") => {
-    setLoading(provider)
+    setLoading(true)
     const supabase = createClient()
     const next = new URLSearchParams(window.location.search).get("next") || "/dashboard"
     await supabase.auth.signInWithOAuth({
