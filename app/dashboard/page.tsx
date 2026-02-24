@@ -27,7 +27,14 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
+  const { data: usage } = await supabase
+    .from('user_usage')
+    .select('proposals_created')
+    .eq('user_id', user.id)
+    .single()
+
   const typedProposals = (proposals ?? []) as Proposal[]
+  const proposalsCreated = usage?.proposals_created ?? 0
 
   return (
     <div className="min-h-screen bg-white">
@@ -58,10 +65,10 @@ export default async function DashboardPage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900">提案書一覧</h2>
             <p className="mt-1 text-sm text-gray-400">
-              無料プラン：{typedProposals.length} / 3 件使用
+              無料プラン：{proposalsCreated} / 3 件生成済み
             </p>
           </div>
-          {typedProposals.length < 3 ? (
+          {proposalsCreated < 3 ? (
             <Link href="/generate">
               <Button className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
                 + 新規作成

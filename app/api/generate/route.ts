@@ -10,14 +10,17 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
+    let currentCount = 0
     if (user) {
-      // 無料プランの上限チェック
-      const { count } = await supabase
-        .from('proposals')
-        .select('*', { count: 'exact', head: true })
+      // ライフタイム生成回数チェック
+      const { data: usage } = await supabase
+        .from('user_usage')
+        .select('proposals_created')
         .eq('user_id', user.id)
+        .single()
 
-      if ((count ?? 0) >= FREE_PLAN_LIMIT) {
+      currentCount = usage?.proposals_created ?? 0
+      if (currentCount >= FREE_PLAN_LIMIT) {
         return NextResponse.json({ error: 'LIMIT_EXCEEDED' }, { status: 403 })
       }
     }
@@ -26,11 +29,18 @@ export async function POST(req: NextRequest) {
     const output = await generateProposal(input)
 
     if (user) {
+      // 提案書を保存
       await supabase.from('proposals').insert({
         user_id: user.id,
         input: input,
         output: output,
       })
+
+      // 生涯生成回数をインクリメント
+      await supabase.from('user_usage').upsert({
+        user_id: user.id,
+        proposals_created: currentCount + 1,
+      }, { onConflict: 'user_id' })
     }
 
     return NextResponse.json(output)
