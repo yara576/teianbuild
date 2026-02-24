@@ -176,13 +176,19 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
     }
   };
 
-  const handleLoginRedirect = () => {
+  const handleLoginRedirect = async () => {
     if (pendingDraft) {
       sessionStorage.setItem("proposalDraft", JSON.stringify(pendingDraft));
       sessionStorage.setItem("editMode", "draft");
       sessionStorage.setItem("proposalEditInput", JSON.stringify(pendingDraft));
     }
-    router.push("/auth/login?next=/generate");
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/generate")}`,
+      },
+    });
   };
 
   return (
