@@ -8,6 +8,18 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  let isLimitReached = false
+  if (user) {
+    const { data: usage } = await supabase
+      .from('user_usage')
+      .select('proposals_created, is_paid')
+      .eq('user_id', user.id)
+      .single()
+    const isPaid = usage?.is_paid ?? false
+    const proposalsCreated = usage?.proposals_created ?? 0
+    isLimitReached = !isPaid && proposalsCreated >= 3
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* ナビゲーション */}
@@ -22,9 +34,9 @@ export default async function Home() {
                 <Link href="/dashboard" className="hidden text-sm text-gray-500 hover:text-gray-900 transition-colors sm:block">
                   ダッシュボード
                 </Link>
-                <Link href="/generate">
+                <Link href={isLimitReached ? '/dashboard' : '/generate'}>
                   <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
-                    新規作成
+                    {isLimitReached ? 'アップグレード' : '新規作成'}
                   </Button>
                 </Link>
               </>
