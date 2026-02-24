@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
+import LogoutButton from "@/components/dashboard/LogoutButton";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -26,6 +27,7 @@ export default async function Home() {
                     新規作成
                   </Button>
                 </Link>
+                <LogoutButton />
               </>
             ) : (
               <>
@@ -227,9 +229,9 @@ export default async function Home() {
                 desc: "生成された提案書はそのままクライアントに提出できるプロ品質。書き直し不要。",
               },
               {
-                icon: "🔒",
-                title: "シンプルで安全",
-                desc: "アカウント不要でスタート。入力した情報は生成にのみ使用され、保存・共有はされません。",
+                icon: "🗂️",
+                title: "履歴保存・再利用",
+                desc: "生成した提案書はマイページに自動保存。過去の提案書をベースに再編集・再生成できます。",
               },
             ].map((f) => (
               <div
@@ -257,7 +259,7 @@ export default async function Home() {
             時間を無駄にしない。
           </h2>
           <p className="mb-8 text-indigo-200">
-            クレジットカード不要。アカウント登録不要。3件まで完全無料。
+            クレジットカード不要。メールアドレスだけで登録。3件まで完全無料。
           </p>
           <Link href="/generate">
             <Button
