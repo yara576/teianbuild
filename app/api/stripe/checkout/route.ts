@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const origin = req.headers.get('origin') ?? `https://${req.headers.get('host')}`
+    const appUrl = origin
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
