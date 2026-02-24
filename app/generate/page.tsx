@@ -36,14 +36,19 @@ export default function GeneratePage() {
 
   useEffect(() => {
     const editMode = sessionStorage.getItem('editMode')
-    if (editMode === 'true') {
+    if (editMode === 'true' || editMode === 'draft') {
       sessionStorage.removeItem('editMode')
       const saved = sessionStorage.getItem('proposalEditInput')
       if (saved) {
         try {
           const input = JSON.parse(saved) as ProposalInput
-          setFromEdit(true)
-          setSelected({ id: 'edit', name: '再編集', description: '', icon: '✏️', color: 'indigo', defaults: input })
+          if (editMode === 'true') {
+            setFromEdit(true)
+            setSelected({ id: 'edit', name: '再編集', description: '', icon: '✏️', color: 'indigo', defaults: input })
+          } else {
+            // draft: テンプレート選択をスキップしてフォームを表示（fromEdit は false のまま）
+            setSelected({ id: 'draft', name: '下書き', description: '', icon: '📝', color: 'indigo', defaults: input })
+          }
         } catch {}
       }
     }
@@ -131,7 +136,7 @@ export default function GeneratePage() {
         ) : (
           /* フォーム */
           <div>
-            {selected.id !== "blank" && selected.id !== "edit" && (
+            {selected.id !== "blank" && selected.id !== "edit" && selected.id !== "draft" && (
               <div className="mb-6 flex items-center gap-3 rounded-xl bg-white border border-gray-200 px-4 py-3 shadow-sm">
                 <span className="text-xl">{selected.icon}</span>
                 <div>

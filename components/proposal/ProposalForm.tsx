@@ -99,6 +99,8 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
         techStack: techStackInput.split(",").map((s) => s.trim()).filter(Boolean),
       };
       sessionStorage.setItem("proposalDraft", JSON.stringify(draft));
+      sessionStorage.setItem("editMode", "draft");
+      sessionStorage.setItem("proposalEditInput", JSON.stringify(draft));
       router.push("/auth/login?next=/generate");
       return;
     }
