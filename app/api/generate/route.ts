@@ -15,12 +15,14 @@ export async function POST(req: NextRequest) {
       // ライフタイム生成回数チェック
       const { data: usage } = await supabase
         .from('user_usage')
-        .select('proposals_created')
+        .select('proposals_created, is_paid')
         .eq('user_id', user.id)
         .single()
 
       currentCount = usage?.proposals_created ?? 0
-      if (currentCount >= FREE_PLAN_LIMIT) {
+      const isPaid = usage?.is_paid ?? false
+
+      if (!isPaid && currentCount >= FREE_PLAN_LIMIT) {
         return NextResponse.json({ error: 'LIMIT_EXCEEDED' }, { status: 403 })
       }
     }
