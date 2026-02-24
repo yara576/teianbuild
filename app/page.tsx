@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
-import LogoutButton from "@/components/dashboard/LogoutButton";
+
 
 export default async function Home() {
   const supabase = await createClient();
@@ -27,7 +27,6 @@ export default async function Home() {
                     新規作成
                   </Button>
                 </Link>
-                <LogoutButton />
               </>
             ) : (
               <>
