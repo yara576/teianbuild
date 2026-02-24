@@ -378,7 +378,7 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
             {/* あなたの情報 */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="yourName">あなたの名前</Label>
+                <Label htmlFor="yourName">担当者名（あなた）</Label>
                 <Input
                   id="yourName"
                   name="yourName"
@@ -402,7 +402,7 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="hourlyRate">時給（円）</Label>
+                <Label htmlFor="hourlyRate">稼働単価（円/時）</Label>
                 <Input
                   id="hourlyRate"
                   name="hourlyRate"
