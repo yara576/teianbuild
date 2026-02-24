@@ -282,6 +282,18 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
               />
             </div>
 
+            {/* 技術スタック */}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="techStack">技術スタック（カンマ区切り）</Label>
+              <Input
+                id="techStack"
+                name="techStack"
+                value={techStackInput}
+                onChange={(e) => setTechStackInput(e.target.value)}
+                placeholder="例: React, Next.js, TypeScript, PostgreSQL"
+              />
+            </div>
+
             {/* 案件概要 */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
@@ -311,24 +323,12 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
                 value={form.projectDescription}
                 onChange={handleChange}
                 rows={4}
-                placeholder="案件の概要を入力してください。プロジェクト名を入力後「✨ AIで補完」を押すと自動生成できます"
+                placeholder="案件の概要を入力してください。案件タイトル・技術スタック入力後に「✨ AIで補完」を押すと自動生成できます"
                 required
               />
               {!form.projectTitle && (
                 <p className="text-xs text-gray-400">※ 案件タイトルを入力すると「AIで補完」が使えます</p>
               )}
-            </div>
-
-            {/* 技術スタック */}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="techStack">技術スタック（カンマ区切り）</Label>
-              <Input
-                id="techStack"
-                name="techStack"
-                value={techStackInput}
-                onChange={(e) => setTechStackInput(e.target.value)}
-                placeholder="例: React, Next.js, TypeScript, PostgreSQL"
-              />
             </div>
 
             {/* 期間・予算 */}
