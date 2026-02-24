@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { ProposalInput } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +41,7 @@ interface ProposalFormProps {
 export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [form, setForm] = useState<ProposalInput>({
     projectTitle: defaults.projectTitle ?? "",
     clientName: defaults.clientName ?? "",
@@ -54,6 +57,19 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
     defaults.techStack?.join(", ") ?? ""
   );
 
+  // ログイン後に戻った際、下書きを復元する
+  useEffect(() => {
+    const draft = sessionStorage.getItem("proposalDraft");
+    if (draft) {
+      sessionStorage.removeItem("proposalDraft");
+      try {
+        const parsed = JSON.parse(draft) as ProposalInput;
+        setForm(parsed);
+        setTechStackInput(parsed.techStack?.join(", ") ?? "");
+      } catch {}
+    }
+  }, []);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -66,6 +82,20 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ログイン確認
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      const draft: ProposalInput = {
+        ...form,
+        techStack: techStackInput.split(",").map((s) => s.trim()).filter(Boolean),
+      };
+      sessionStorage.setItem("proposalDraft", JSON.stringify(draft));
+      setShowLoginPrompt(true);
+      return;
+    }
+
     setLoading(true);
 
     const payload: ProposalInput = {
@@ -235,6 +265,30 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
               />
             </div>
           </div>
+
+          {/* ログインプロンプト */}
+          {showLoginPrompt && (
+            <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-5 text-center space-y-3">
+              <p className="text-sm font-semibold text-indigo-900">
+                提案書を生成するにはログインが必要です
+              </p>
+              <p className="text-xs text-indigo-600">
+                入力内容は保存されています。ログイン後にそのまま生成できます。
+              </p>
+              <Link href="/auth/login?next=/generate" className="block">
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
+                  ログイン / 新規登録
+                </Button>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowLoginPrompt(false)}
+                className="text-xs text-indigo-400 hover:text-indigo-600 transition-colors"
+              >
+                キャンセル
+              </button>
+            </div>
+          )}
 
           {/* 送信ボタン */}
           <Button type="submit" disabled={loading} className="mt-2 cursor-pointer">

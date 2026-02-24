@@ -23,10 +23,11 @@ export default function LoginPage() {
     setLoading(true)
 
     const supabase = createClient()
+    const next = new URLSearchParams(window.location.search).get("next") || "/dashboard"
     await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin + "/auth/callback",
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     })
 
