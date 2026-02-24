@@ -1,45 +1,59 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req: NextRequest) {
-  const { projectTitle, clientName, techStack, currentDescription } = await req.json()
+  const {
+    projectTitle,
+    clientName,
+    techStack,
+    currentDescription,
+    duration,
+    budget,
+    yourRole,
+    hourlyRate,
+  } = await req.json()
 
-  const prompt = `フリーランスエンジニアの提案書に記載する「案件概要」を作成してください。
-プロジェクトの背景・目的・課題・解決策・期待効果を含む、説得力のある概要を200〜300文字程度で作成してください。
-箇条書きではなく自然なビジネス文章で記述してください。
+  const emptyFields = []
+  if (!duration) emptyFields.push('duration（期間）: "1週間" | "1ヶ月" | "3ヶ月" | "6ヶ月" | "それ以上" のいずれか')
+  if (!budget) emptyFields.push('budget（予算感）: "〜30万" | "〜50万" | "〜100万" | "100万以上" | "応相談" のいずれか')
+  if (!yourRole) emptyFields.push('yourRole（役割）: 技術スタックに合った職種名（例: フルスタックエンジニア）')
+  if (!hourlyRate) emptyFields.push('hourlyRate（時給）: 役割・技術スタックに合った時給（数値のみ、例: 5000）')
 
+  const prompt = `フリーランスエンジニアの提案書作成を支援してください。
+以下の情報をもとに、必ずJSON形式のみで回答してください。
+
+【入力情報】
 プロジェクト名: ${projectTitle || '（未入力）'}
 クライアント名: ${clientName || '（未入力）'}
 技術スタック: ${techStack?.length > 0 ? techStack.join(', ') : '（未入力）'}
-${currentDescription ? `現在の概要（これを元に改善してください）: ${currentDescription}` : ''}
+${currentDescription ? `現在の概要: ${currentDescription}` : ''}
 
-案件概要の本文のみを出力してください。タイトルや前置きは不要です。`
+【出力するJSONの形式】
+{
+  "description": "案件概要（200〜300文字、プロジェクトの背景・目的・課題・解決策・期待効果を含む自然なビジネス文章）",
+  ${emptyFields.length > 0 ? emptyFields.map(f => `"${f.split('（')[0].trim()}": "値"`) .join(',\n  ') : ''}
+}
 
-  const stream = await client.messages.create({
+【制約】
+- 案件概要は箇条書きではなく自然なビジネス文章で記述
+${emptyFields.length > 0 ? `- 以下のフィールドの値を提案してください:\n${emptyFields.map(f => `  - ${f}`).join('\n')}` : ''}
+- JSONのみを出力し、前後に説明文は不要`
+
+  const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1024,
     messages: [{ role: 'user', content: prompt }],
-    stream: true,
   })
 
-  const encoder = new TextEncoder()
-  const readable = new ReadableStream({
-    async start(controller) {
-      for await (const chunk of stream) {
-        if (
-          chunk.type === 'content_block_delta' &&
-          chunk.delta.type === 'text_delta'
-        ) {
-          controller.enqueue(encoder.encode(chunk.delta.text))
-        }
-      }
-      controller.close()
-    },
-  })
+  const text = message.content[0].type === 'text' ? message.content[0].text : '{}'
 
-  return new Response(readable, {
-    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-  })
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : '{}')
+    return NextResponse.json(parsed)
+  } catch {
+    return NextResponse.json({ description: text })
+  }
 }

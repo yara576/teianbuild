@@ -135,7 +135,6 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
 
   const handleAssistDescription = async () => {
     setAssistLoading(true);
-    setForm((prev) => ({ ...prev, projectDescription: "" }));
     try {
       const res = await fetch("/api/assist/description", {
         method: "POST",
@@ -145,18 +144,22 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
           clientName: form.clientName,
           techStack: techStackInput.split(",").map((s) => s.trim()).filter(Boolean),
           currentDescription: form.projectDescription,
+          duration: form.duration,
+          budget: form.budget,
+          yourRole: form.yourRole,
+          hourlyRate: form.hourlyRate || 0,
         }),
       });
-      if (!res.ok || !res.body) throw new Error();
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let text = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        setForm((prev) => ({ ...prev, projectDescription: text }));
-      }
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setForm((prev) => ({
+        ...prev,
+        ...(data.description && { projectDescription: data.description }),
+        ...(data.duration && !prev.duration && { duration: data.duration }),
+        ...(data.budget && !prev.budget && { budget: data.budget }),
+        ...(data.yourRole && !prev.yourRole && { yourRole: data.yourRole }),
+        ...(data.hourlyRate && !prev.hourlyRate && { hourlyRate: Number(data.hourlyRate) }),
+      }));
     } catch {
       alert("AIによる補完に失敗しました。もう一度お試しください。");
     } finally {
