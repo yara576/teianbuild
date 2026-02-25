@@ -23,8 +23,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No subscription found' }, { status: 404 })
     }
 
-    const origin = req.headers.get('origin') ?? `https://${req.headers.get('host')}`
-    const appUrl = origin
+    const envUrl = process.env.NEXT_PUBLIC_APP_URL
+    const originHeader = req.headers.get('origin')
+    const appUrl = envUrl ?? (originHeader?.startsWith('https://') ? originHeader : null)
+    if (!appUrl) {
+      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
+    }
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: usage.stripe_customer_id,

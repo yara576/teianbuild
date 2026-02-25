@@ -33,8 +33,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, skipped: true })
   }
 
-  // イベントを処理済みとして記録
-  await supabase.from('stripe_events').insert({ event_id: event.id, type: event.type })
+  // イベントを処理済みとして記録（失敗時はスキップして重複処理を防ぐ）
+  const { error: insertError } = await supabase
+    .from('stripe_events')
+    .insert({ event_id: event.id, type: event.type })
+
+  if (insertError) {
+    // ユニーク制約違反は別リクエストが先に処理済み → 重複処理を防ぐためスキップ
+    console.warn('stripe_events insert failed (possible duplicate):', insertError.message)
+    return NextResponse.json({ received: true, skipped: true })
+  }
 
   switch (event.type) {
     case 'checkout.session.completed': {
@@ -64,6 +72,21 @@ export async function POST(req: NextRequest) {
             is_paid: false,
             stripe_subscription_id: null,
             subscription_status: 'cancelled',
+          })
+          .eq('stripe_customer_id', subscription.customer as string)
+      }
+      break
+    }
+
+    case 'customer.subscription.updated': {
+      const subscription = event.data.object as Stripe.Subscription
+      if (subscription.customer) {
+        const isActive = subscription.status === 'active'
+        await supabase
+          .from('user_usage')
+          .update({
+            is_paid: isActive,
+            subscription_status: subscription.status,
           })
           .eq('stripe_customer_id', subscription.customer as string)
       }

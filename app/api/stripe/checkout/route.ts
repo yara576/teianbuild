@@ -13,8 +13,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const origin = req.headers.get('origin') ?? `https://${req.headers.get('host')}`
-    const appUrl = origin
+    // NEXT_PUBLIC_APP_URL を優先。未設定の場合は origin ヘッダーを使うが
+    // Host ヘッダーは信頼しない（Host header injection 対策）
+    const envUrl = process.env.NEXT_PUBLIC_APP_URL
+    const originHeader = req.headers.get('origin')
+    const appUrl = envUrl ?? (originHeader?.startsWith('https://') ? originHeader : null)
+    if (!appUrl) {
+      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
