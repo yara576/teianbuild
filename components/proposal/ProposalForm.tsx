@@ -170,6 +170,16 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 期間・予算の必須チェック
+    if (!form.duration) {
+      alert("期間を選択してください。");
+      return;
+    }
+    if (!form.budget) {
+      alert("予算感を選択してください。");
+      return;
+    }
+
     // 未ログインの場合はモーダルを表示
     if (!isLoggedIn) {
       const draft: ProposalInput = {

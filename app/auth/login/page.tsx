@@ -17,7 +17,8 @@ export default function LoginPage() {
   const handleOAuth = async (provider: "google") => {
     setLoading(true)
     const supabase = createClient()
-    const next = new URLSearchParams(window.location.search).get("next") || "/dashboard"
+    const rawNext = new URLSearchParams(window.location.search).get("next") || "/dashboard"
+    const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : "/dashboard"
     await supabase.auth.signInWithOAuth({
       provider,
       options: {

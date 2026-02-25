@@ -47,7 +47,11 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
       const res = await fetch(`/api/proposals/${proposal.id}`, { method: 'DELETE' })
       if (res.ok) {
         router.refresh()
+      } else {
+        alert('削除に失敗しました。もう一度お試しください。')
       }
+    } catch {
+      alert('削除に失敗しました。もう一度お試しください。')
     } finally {
       setIsDeleting(false)
       setShowConfirm(false)
