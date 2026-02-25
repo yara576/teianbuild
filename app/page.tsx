@@ -92,7 +92,7 @@ export default async function Home() {
                 今すぐ無料で試す →
               </Button>
             </Link>
-            <p className="text-sm text-gray-400">クレジットカード不要 · 3件まで無料</p>
+            <p className="text-sm text-gray-400">Google アカウントで即登録 · 3件まで無料</p>
           </div>
         </div>
 
@@ -270,7 +270,7 @@ export default async function Home() {
             時間を無駄にしない。
           </h2>
           <p className="mb-8 text-indigo-200">
-            クレジットカード不要。メールアドレスだけで登録。3件まで完全無料。
+            クレジットカード不要。Google アカウントで即登録。3件まで完全無料。
           </p>
           <Link href="/generate">
             <Button
