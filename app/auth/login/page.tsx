@@ -38,7 +38,7 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-xl">ログイン / 新規登録</CardTitle>
           <CardDescription>
-            アカウントでログインして提案書を作成・保存できます。
+            Google アカウントでログインして提案書を作成・保存できます。
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">

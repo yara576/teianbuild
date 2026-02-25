@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     .from('stripe_events')
     .select('id')
     .eq('event_id', event.id)
-    .single()
+    .maybeSingle()
 
   if (existing) {
     return NextResponse.json({ received: true, skipped: true })
@@ -57,14 +57,16 @@ export async function POST(req: NextRequest) {
 
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription
-      await supabase
-        .from('user_usage')
-        .update({
-          is_paid: false,
-          stripe_subscription_id: null,
-          subscription_status: 'cancelled',
-        })
-        .eq('stripe_customer_id', subscription.customer as string)
+      if (subscription.customer) {
+        await supabase
+          .from('user_usage')
+          .update({
+            is_paid: false,
+            stripe_subscription_id: null,
+            subscription_status: 'cancelled',
+          })
+          .eq('stripe_customer_id', subscription.customer as string)
+      }
       break
     }
 

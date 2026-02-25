@@ -326,7 +326,7 @@ export default function ProposalForm({ defaults = {} }: ProposalFormProps) {
                 value={form.projectDescription}
                 onChange={handleChange}
                 rows={4}
-                placeholder="案件の概要を入力してください。案件タイトル・技術スタック入力後に「✨ AIで補完」を押すと自動生成できます"
+                placeholder="案件の概要を入力してください"
                 required
               />
               {!form.projectTitle && (

@@ -98,7 +98,7 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
           </div>
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-2 flex-wrap">
-              {proposal.input.techStack.slice(0, 3).map((tech) => (
+              {Array.isArray(proposal.input.techStack) && proposal.input.techStack.slice(0, 3).map((tech) => (
                 <span
                   key={tech}
                   className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
@@ -106,7 +106,7 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                   {tech}
                 </span>
               ))}
-              {proposal.input.techStack.length > 3 && (
+              {Array.isArray(proposal.input.techStack) && proposal.input.techStack.length > 3 && (
                 <span className="text-xs text-gray-400">
                   +{proposal.input.techStack.length - 3}
                 </span>
